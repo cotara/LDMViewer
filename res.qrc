@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/switch1.png</file>
+        <file>res/switch2.png</file>
+        <file>res/refresh.png</file>
+        <file>res/eth2.png</file>
+        <file>res/Rightsidebar.svg</file>
+        <file>res/table.svg</file>
+        <file>res/vga.png</file>
+        <file>res/command-line.svg</file>
+        <file>res/target.png</file>
+        <file>res/double2.png</file>
+    </qresource>
+    <qresource prefix="/qss">
+        <file>style.css</file>
+        <file>styleGreenButtons.css</file>
+        <file>styleWhiteButtons.css</file>
+        <file>styleYelowButtons.css</file>
+    </qresource>
+</RCC>

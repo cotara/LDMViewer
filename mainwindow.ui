@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>true</bool>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>40</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonIconOnly</enum>
+   </property>
+   <property name="floatable">
+    <bool>true</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionconsoleOn"/>
+   <addaction name="actionsettingsOn"/>
+   <addaction name="actiontcp_com"/>
+   <addaction name="actiondoubleMode"/>
+  </widget>
+  <action name="actionconsoleOn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/command-line.svg</normaloff>:/res/command-line.svg</iconset>
+   </property>
+   <property name="text">
+    <string>consoleOn</string>
+   </property>
+   <property name="toolTip">
+    <string>Отображать консоль</string>
+   </property>
+  </action>
+  <action name="actionsettingsOn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/Rightsidebar.svg</normaloff>:/res/Rightsidebar.svg</iconset>
+   </property>
+   <property name="text">
+    <string>settingsOn</string>
+   </property>
+   <property name="toolTip">
+    <string>Отображать панель настроек</string>
+   </property>
+  </action>
+  <action name="actiontcp_com">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/vga.png</normaloff>
+     <normalon>:/res/eth2.png</normalon>:/res/vga.png</iconset>
+   </property>
+   <property name="text">
+    <string>tcp_com</string>
+   </property>
+   <property name="toolTip">
+    <string>Переключение интерфейсов</string>
+   </property>
+  </action>
+  <action name="actiondoubleMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/double2.png</normaloff>:/res/double2.png</iconset>
+   </property>
+   <property name="text">
+    <string>doubleMode</string>
+   </property>
+   <property name="toolTip">
+    <string>Подключение второго устройства</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
+ <connections/>
+</ui>
