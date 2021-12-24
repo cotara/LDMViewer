@@ -221,9 +221,9 @@ void LDMDevice::modbusDataProcessing(){
         doubleData.append((modbusRegs.at(1)+65536*modbusRegs.at(0))/1000.0);
         doubleData.append((modbusRegs.at(3)+65536*modbusRegs.at(2))/1000.0);
         doubleData.append((modbusRegs.at(5)+65536*modbusRegs.at(4))/1000.0);
-        //doubleData.append((60000-modbusRegs.at(9)-65536*modbusRegs.at(8))/1000.0);
-        //doubleData.append((60000-modbusRegs.at(11)-65536*modbusRegs.at(10))/1000.0);
-        //doubleData.append((modbusRegs.at(13)+65536*modbusRegs.at(12)));
+        doubleData.append((60000-modbusRegs.at(9)-65536*modbusRegs.at(8))/1000.0);
+        doubleData.append((60000-modbusRegs.at(11)-65536*modbusRegs.at(10))/1000.0);
+        doubleData.append((modbusRegs.at(13)+65536*modbusRegs.at(12)));
         m_looker->setData(doubleData);
     }
     else{
@@ -235,9 +235,9 @@ QModbusDataUnit LDMDevice::readRequest() const
 {
     const auto table = static_cast<QModbusDataUnit::RegisterType>(QModbusDataUnit::HoldingRegisters);
 
-    int startAddress = 0;
+    int startAddress = 16;
 
-    quint16 numberOfEntries = 10;
+    quint16 numberOfEntries = 22;
     return QModbusDataUnit(table, startAddress, numberOfEntries);
 }
 

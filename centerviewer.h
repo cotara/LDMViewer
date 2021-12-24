@@ -20,7 +20,7 @@ class centerViewer : public QWidget
     void paintPosition(QPainter *qp);
     double xPos=0,yPos=0;
     double xRad=0,yRad=0;
-    int m_scale = 5;
+    int m_scale = 20;
     QPoint widgetCenter;
 };
 

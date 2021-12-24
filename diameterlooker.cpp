@@ -33,9 +33,9 @@ void diameterLooker::rePaint()
     ui->lcdNumber->display(m_data.at(0));//Основной диаметр
     ui->lcdNumber_2->display(m_data.at(1));//х Диаметр
     ui->lcdNumber_3->display(m_data.at(2));//y Диаметр
-    //m_centerViewer->setCoord(m_data.at(3),m_data.at(4));   //Размер и положение
-    //m_centerViewer->setRad(m_data.at(1),m_data.at(2));
-    if(1){//m_data.at(5) == 0){//Только если не пришла ошибка, добавляем данные на график. Иначе, будет пустое место
+    m_centerViewer->setCoord(m_data.at(3),m_data.at(4));   //Размер и положение
+    m_centerViewer->setRad(m_data.at(1),m_data.at(2));
+    if(static_cast<int>(m_data.at(5)) == 0){//Только если не пришла ошибка, добавляем данные на график. Иначе, будет пустое место
         m_diameters.append(m_data.at(0));
         xDiameters.append(packetCounter++);
         if(m_diameters.size()>100){
@@ -44,8 +44,8 @@ void diameterLooker::rePaint()
         }
         setGraphData();
     }
-    //else
-     //   setError(m_data.at(5));
+
+    setError(m_data.at(5));
 
 }
 
