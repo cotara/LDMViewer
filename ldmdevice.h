@@ -61,7 +61,7 @@ private slots:
     void modbusDataProcessing();
 signals:
     void connectionStatus(int server, int status, const QString &host);
-    void errorOccured(const QString &msg);
+    void errorOccured(int server, const QString &msg);
     void modbusDataReceved(int server, const QString &str);
     void modbusRequestSent(int server, const QString &str);
 

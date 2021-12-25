@@ -88,15 +88,15 @@ void LDMDevice::createNewClien(QModbusClient *client, bool type){
 
     if(!m_ModbusClient){//Если память не выделилась
         if (m_type == Serial)
-            emit errorOccured("Could not create QModbusRtuSerialMaster");
+            emit errorOccured(m_server,"Could not create QModbusRtuSerialMaster");
         else if (m_type == Tcp)
-            emit errorOccured("Could not create QModbusTcpClient");
+            emit errorOccured(m_server,"Could not create QModbusTcpClient");
         m_looker->setEnabled(false);
     }
     else{
         connect(m_ModbusClient, &QModbusClient::stateChanged,this,&LDMDevice::onModbusStateChanged);
         connect(m_ModbusClient, &QModbusClient::errorOccurred, this,[=]{
-            emit errorOccured("Устройство " + QString::number(m_server) + " : " + m_ModbusClient->errorString());
+            emit errorOccured(m_server,"Устройство " + QString::number(m_server) + " : " + m_ModbusClient->errorString());
             m_looker->setEnabled(false);
         });
     }
@@ -105,7 +105,7 @@ void LDMDevice::createNewClien(QModbusClient *client, bool type){
 //Подключение
 void LDMDevice::onConnect(){
     if(!m_ModbusClient){
-         emit errorOccured("Устройство с адресом " + QString::number(m_server) + "не существует");
+         emit errorOccured(m_server,"Устройство с адресом " + QString::number(m_server) + "не существует");
          m_looker->setEnabled(false);
          return;
     }
@@ -157,7 +157,7 @@ void LDMDevice::onModbusStateChanged(int state){
 void LDMDevice::handlerTimer(){
 
     if (!m_ModbusClient){
-        emit errorOccured("Устройство с адресом " + QString::number(m_server) + "не существует");
+        emit errorOccured(m_server,"Устройство с адресом " + QString::number(m_server) + "не существует");
          m_looker->setEnabled(false);
         return;
     }
@@ -172,7 +172,7 @@ void LDMDevice::handlerTimer(){
             delete reply; // broadcast replies return immediately
     }
     else{
-        emit errorOccured("Устройство " + QString::number(reply->serverAddress()) + " : " + "Read error: " + m_ModbusClient->errorString());
+        emit errorOccured(m_server,"Устройство " + QString::number(reply->serverAddress()) + " : " + "Read error: " + m_ModbusClient->errorString());
         m_looker->setEnabled(false);
     }
 }
@@ -197,7 +197,7 @@ void LDMDevice::onReadReady()
         modbusDataProcessing();
     }
     else{
-         emit errorOccured("Read response error (" + QString::number(servAdd) + " DEV): "+ reply->errorString());
+         emit errorOccured(m_server,"Read response error (" + QString::number(servAdd) + " DEV): "+ reply->errorString());
          m_looker->setEnabled(false);
     }
 

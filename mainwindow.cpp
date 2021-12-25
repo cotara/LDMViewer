@@ -85,6 +85,7 @@ void MainWindow::connectNewDevice(LDMDevice *dev){
     connect(dev,&LDMDevice::errorOccured, this,&MainWindow::connectionFailed);                       //Сообщение об ошибке
     connect(dev,&LDMDevice::modbusRequestSent,this,&MainWindow::modbusPacketPrint);                //Печатаем запрос
     connect(dev,&LDMDevice::modbusDataReceved,this,&MainWindow::modbusPacketPrint);               //Пришли данные по modbus
+    connect(dev,&LDMDevice::modbusDataReceved,[=](int server, const QString&){m_connectionPanel->setStatusLabel(server,true);});
 }
 
 void MainWindow::saveSettings(){
@@ -189,10 +190,11 @@ void MainWindow::connectionChanged(int server, int status,const QString &host){
     }
 }
 
-void MainWindow::connectionFailed( const QString &msg){
+void MainWindow::connectionFailed(int server, const QString &msg){
     QString str;
     m_statusBar->setMessageBar(msg);
     m_console->putData(str.toUtf8());
+    m_connectionPanel->setStatusLabel(server,false);
 }
 
 void MainWindow::connectionPushed(bool action){
@@ -209,8 +211,6 @@ void MainWindow::connectionPushed(bool action){
 void MainWindow::modbusPacketPrint(int , const QString &str){
     m_console->putData(str.toUtf8());
 }
-
-
 
 void MainWindow::clearConsole(){
     m_console->clear();
