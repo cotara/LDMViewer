@@ -13,7 +13,6 @@ void Looker::setData(const QVector<double> &data)
 {
     m_data = data;
     rePaint();
-
 }
 void Looker::setName(int name){
     m_devNum = name;
