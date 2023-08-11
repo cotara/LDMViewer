@@ -7,6 +7,8 @@ EXTRA_QMAKE_TARGET_PRODUCT =  LDM Viewer
 QMAKE_TARGET_DESCRIPTION = Клиент для измерителей диаметров LDM
 QMAKE_TARGET_COPYRIGHT = NurRuslan
 
+QMAKE_LFLAGS = -static -static-libgcc
+
 CONFIG += c++11
 
 # You can make your code fail to compile if it uses deprecated APIs.

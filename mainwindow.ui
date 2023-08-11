@@ -67,7 +67,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/command-line.svg</normaloff>:/res/command-line.svg</iconset>
+     <normaloff>:/res/command-line.png</normaloff>:/res/command-line.png</iconset>
    </property>
    <property name="text">
     <string>consoleOn</string>
@@ -85,7 +85,7 @@
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/Rightsidebar.svg</normaloff>:/res/Rightsidebar.svg</iconset>
+     <normaloff>:/res/Rightsidebar.png</normaloff>:/res/Rightsidebar.png</iconset>
    </property>
    <property name="text">
     <string>settingsOn</string>
