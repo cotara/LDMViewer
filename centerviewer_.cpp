@@ -29,7 +29,6 @@ void centerViewer::setScale(int scale)
 void centerViewer::paintEvent(QPaintEvent *e) {
 
   Q_UNUSED(e);
-
   widgetCenter.setX(this->size().width()/2);
   widgetCenter.setY(this->size().height()/2);
   QPainter qp(this);
@@ -41,7 +40,7 @@ void centerViewer::addCircle(QPainter *qp)
 
     qp->setPen(QPen(Qt::black, 3, Qt::SolidLine, Qt::FlatCap));
     int minDimention = qMin(widgetCenter.x(),widgetCenter.y());
-    qp->drawEllipse(widgetCenter, minDimention-3, minDimention-3);
+    qp->drawEllipse(widgetCenter, minDimention, minDimention);
     //Рисуем перекрестие
     QPoint d1(widgetCenter.x(),widgetCenter.y()+0.1*widgetCenter.y()),
            d2(widgetCenter.x(),widgetCenter.y()-0.1*widgetCenter.y()),
@@ -56,13 +55,8 @@ void centerViewer::paintPosition(QPainter *qp)
     qp->setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
     QBrush brush(Qt::red,Qt::SolidPattern);
     qp->setBrush(brush);
-    int minDimention = qMin(widgetCenter.x(),widgetCenter.y());
-    minDimention-=3;
-    double mmToPixScale = minDimention*2.0/m_scale;
-    QPointF rot (m_angle*mmToPixScale*(yPos-xPos),-m_angle*mmToPixScale*(-xPos-yPos));
-    QPointF center = static_cast<QPointF>(widgetCenter) + rot;
-    //QPointF center = static_cast<QPointF>(widgetCenter) + QPointF(xPos*mmToPixScale,yPos*mmToPixScale);
-    if(xRad > 0 && yRad>0){
-        qp->drawEllipse(center, xRad*mmToPixScale, yRad*mmToPixScale);
-    }
+    double mmToPixScale = widgetCenter.y()*2/m_scale;
+    QPointF center = static_cast<QPointF>(widgetCenter) + QPointF(xPos*mmToPixScale,yPos*mmToPixScale);
+    if(xRad > 0 && yRad>0)
+        qp->drawEllipse(center, xRad*mmToPixScale, xRad*mmToPixScale);
 }

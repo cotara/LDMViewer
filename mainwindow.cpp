@@ -72,12 +72,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 MainWindow::~MainWindow()
 {
     saveSettings();
-    delete ui;
+
     for (LDMDevice *i:devices)
         delete i;
     delete m_statusBar;
     delete m_console;
     delete m_connectionPanel;
+    delete ui;
 }
 
 void MainWindow::connectNewDevice(LDMDevice *dev){

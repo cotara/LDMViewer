@@ -10,7 +10,6 @@ diameterLooker::diameterLooker(QWidget *parent,int diam, int num) : Looker(paren
     diameterPlot->addGraph();
     diameterPlot->setMinimumHeight(200);
     ui->HLayout->insertWidget(1,m_centerViewer);
-    //ui->HLayout->addWidget(m_centerViewer);
     ui->VLayout->addWidget(diameterPlot);
 
     setEnabled(false);
@@ -37,7 +36,7 @@ void diameterLooker::rePaint()
     ui->lcdNumber_4->display(m_data.at(3));//х Смещение
     ui->lcdNumber_5->display(m_data.at(4));//y Смещение
     m_centerViewer->setCoord(m_data.at(3),m_data.at(4));   //Размер и положение
-    m_centerViewer->setRad(m_data.at(1),m_data.at(2));
+    m_centerViewer->setRad(m_data.at(1)/2.0,m_data.at(2)/2.0);
     if(static_cast<int>(m_data.at(5)) == 0){//Только если не пришла ошибка, добавляем данные на график. Иначе, будет пустое место
         m_diameters.append(m_data.at(0));
         xDiameters.append(packetCounter++);

@@ -22,6 +22,7 @@ class centerViewer : public QWidget
     double xRad=0,yRad=0;
     int m_scale = 20;
     QPoint widgetCenter;
+    const double m_angle = 0.70710678118654752440084436210485;
 };
 
 #endif // CENTERVIEWER_H
