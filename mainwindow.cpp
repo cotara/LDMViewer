@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     addToolBar(Qt::RightToolBarArea, ui->toolBar);//Перемещаем тулбарнаправо
 
-    ui->actiontcp_com->setVisible(false);
+    //ui->actiontcp_com->setVisible(false);
 
 }
 
