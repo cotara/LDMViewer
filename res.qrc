@@ -12,11 +12,55 @@
         <file>res/double2.png</file>
         <file>res/command-line.png</file>
         <file>res/Rightsidebar.png</file>
+        <file>res/add.png</file>
+        <file>res/add2.png</file>
+        <file>res/add3.png</file>
+        <file>res/add4.png</file>
+        <file>res/add5.png</file>
+        <file>res/apparat-zasi.png</file>
+        <file>res/CAP.png</file>
+        <file>res/command-line_2.png</file>
+        <file>res/connect.png</file>
+        <file>res/connect_1.png</file>
+        <file>res/connect_2.png</file>
+        <file>res/double.png</file>
+        <file>res/double1.png</file>
+        <file>res/eth1.png</file>
+        <file>res/icon.ico</file>
+        <file>res/Id_110.png</file>
+        <file>res/Id_110_.png</file>
+        <file>res/ldm_20.png</file>
+        <file>res/Loading (2).gif</file>
+        <file>res/Loading (3).gif</file>
+        <file>res/Loading (4).gif</file>
+        <file>res/Loading.gif</file>
+        <file>res/office365.png</file>
+        <file>res/Redwill.png</file>
+        <file>res/reset.png</file>
+        <file>res/rj45 (1).png</file>
+        <file>res/rj45.png</file>
+        <file>res/search1.png</file>
+        <file>res/search2.png</file>
+        <file>res/search3.png</file>
+        <file>res/search4.png</file>
+        <file>res/search5.png</file>
+        <file>res/serialOff.png</file>
+        <file>res/serialOn.png</file>
+        <file>res/settings1.png</file>
+        <file>res/settings2.png</file>
+        <file>res/settings3.png</file>
+        <file>res/settings4.png</file>
+        <file>res/switch.png</file>
+        <file>res/excel (1).png</file>
+        <file>res/excel.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file>style.css</file>
         <file>styleGreenButtons.css</file>
         <file>styleWhiteButtons.css</file>
         <file>styleYelowButtons.css</file>
+    </qresource>
+    <qresource prefix="/fonts">
+        <file>res/Fonts/GranaPadano.ttf</file>
     </qresource>
 </RCC>

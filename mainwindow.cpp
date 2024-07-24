@@ -11,281 +11,221 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     devicesLayout = new QHBoxLayout();
     VLayout = new QVBoxLayout();
     centralWidget()->setLayout(HLayout);
-    //Панель подключения
-    m_connectionPanel = new ConnectionPanel(this);
-    m_connectionPanel->setMaximumWidth(300);
+
     //Консоль
     m_console = new Console(this);
-    m_console->setMaximumHeight(250);
-    ui->actionconsoleOn->setChecked(false);
-    connect(m_connectionPanel,&ConnectionPanel::clearConsole,this,&MainWindow::clearConsole);
+    m_console->setMaximumHeight(300);
+    on_actionconsoleOn_toggled(false);
+
+    //Статус бар
+    m_statusBar = new StatusBar(ui->statusbar);
+
     //Добавление виджетов
     HLayout->addLayout(VLayout);
-    HLayout->addWidget(m_connectionPanel);
     VLayout->addLayout(devicesLayout);
     VLayout->addWidget(m_console);
 
-        //Чтение настроек
+    //Настройки
+    m_serialSetting = new SerialSettings(this);
+    m_conSettings = m_serialSetting->getSettingsList().at(0);   //Настройки, прочитанные из файла
+    connect(m_serialSetting, &SerialSettings::conSettingsChanged,this, &MainWindow::newSettingsOk);
+    m_serialSetting->setType("LDM");
+    m_serialSetting->setEnabledType(false);
+    m_serialSetting->setSearchVisible(false);
+    //Создаем девайс
+    createRedwillDevice(m_conSettings.interf);
 
-    QSettings settings ("settings.ini",QSettings::IniFormat);
-    settings.beginGroup("Settings");
+    fillDevInfo();
 
-    //Считывание настроек необходимо делать до коннектов, чтобы задать только значения в панели управления
-    m_connectionPanel->setIP(0,settings.value("ip0").toString());
-    m_connectionPanel->setIP(1,settings.value("ip1").toString());
-    m_connectionPanel->setPort(0, settings.value("port0").toInt());
-    m_connectionPanel->setPort(1, settings.value("port1").toInt());
-    m_connectionPanel->setComport(settings.value("comport").toString());
-    m_connectionPanel->setBaudrate(settings.value("baudrate").toInt());
-    m_connectionPanel->setModel(0,settings.value("model0").toInt());
-    m_connectionPanel->setModel(1,settings.value("model1").toInt());
-    m_connectionPanel->setServer(0,settings.value("server0").toInt());
-    m_connectionPanel->setServer(1,settings.value("server1").toInt());
+    //Создаем лукер
+    m_looker = new diameterLooker(this, m_devInfo.model,m_devInfo.server);
+    connect(m_looker, &diameterLooker::setParams, this,[=](const QVector<unsigned short> & par, int startAdd, int count){
+        add6ToQueue(m_looker->server(),par, startAdd,count);
+    });
+    devicesLayout->addWidget(m_looker);
 
-        //Создаем девайсы
-    devices.append(new LDMDevice(this,m_connectionPanel->getComport(),m_connectionPanel->getBaud(),m_connectionPanel->getServer(0),ConnectionType::Serial,m_connectionPanel->getModel(0),DeviceType::LDM));
-    devicesLayout->addWidget(devices.at(0));
-    m_statusBar = new StatusBar(ui->statusbar);
-
-    //Проверка был ли включен двойной режим необходмо делать после создания первого девайса, чтобы можно было добавить второй.
-    if(settings.value("interfaceMode").toBool() == 0)//Проверяем тип девайсов
-        connectNewDevice(devices.at(0));            //Если Serial, просто вызываем коннекты
-    else
-        ui->actiontcp_com->setChecked(true);        //Иначе создаем нажимаем кнопку
-
-    ui->actiondoubleMode->setChecked(settings.value("doubleMode").toBool());//Проверяем сколько девайсов было в настройках
-
-    settings.endGroup();
-
-    connect(m_connectionPanel,&ConnectionPanel::connectionPushed,this,&MainWindow::connectionPushed);//Когда нажата кнопка пробуем подл/откл
-    connect(m_connectionPanel,&ConnectionPanel::serverChanged,[=](int numDev, int serverAdd){ devices[numDev]->setServer(serverAdd);});//Изменился сервер
-    connect(m_connectionPanel,&ConnectionPanel::modelChanged,[=](int numDev, int model){ devices[numDev]->setModel(model);});
-    connect(m_connectionPanel,&ConnectionPanel::ipAdd_compChanged,[=](int numDev, const QString & ipAdd){ devices[numDev]->setIpAdd_comp(ipAdd);});
-    connect(m_connectionPanel,&ConnectionPanel::port_boudChanged,[=](int numDev, int port){ devices[numDev]->setPort_boud(port);});
+    //Таймер отправки
+    m_timerSend = new QTimer(this);
+    m_timerSend->setInterval(200);
+    connect(m_timerSend,&QTimer::timeout,this, &MainWindow::sendTimeout);
 
     addToolBar(Qt::RightToolBarArea, ui->toolBar);//Перемещаем тулбарнаправо
 
-    //ui->actiontcp_com->setVisible(false);
 
 }
 
-MainWindow::~MainWindow()
-{
-    saveSettings();
-
-    for (LDMDevice *i:devices)
-        delete i;
-    delete m_statusBar;
-    delete m_console;
-    delete m_connectionPanel;
+MainWindow::~MainWindow(){
+    m_serialSetting->saveSettings();
     delete ui;
 }
 
-void MainWindow::connectNewDevice(LDMDevice *dev){
-    connect(dev,&LDMDevice::connectionStatus,this,&MainWindow::connectionChanged);                   //Состояние соединения изменилось
-    connect(dev,&LDMDevice::errorOccured, this,&MainWindow::connectionFailed);                       //Сообщение об ошибке
-    connect(dev,&LDMDevice::modbusRequestSent,this,&MainWindow::modbusPacketPrint);                //Печатаем запрос
-    connect(dev,&LDMDevice::modbusDataReceved,this,&MainWindow::modbusPacketPrint);               //Пришли данные по modbus
-    connect(dev,&LDMDevice::modbusDataReceved,[=](int server, const QString&){m_connectionPanel->setStatusLabel(server,true);});
+void MainWindow::createRedwillDevice(ClientType type)
+{
+    if (m_dev != nullptr)
+        delete m_dev;
+
+    if(type == ClientType::COM)
+        m_dev = new RedwillDevice(this, m_conSettings.host,m_conSettings.baud);
+    else if(type == ClientType::TCP)
+        m_dev = new RedwillDevice(this,m_conSettings.host);
+
+    connect(m_dev,&RedwillDevice::errorOccured, this,&MainWindow::setMessage);                                          //Сообщение об ошибке
+    connect(m_dev,&RedwillDevice::errorCommunication, this,[=](int,const QString &msg){setMessage(msg);});              //Сообщение об ошибке
+    connect(m_dev,&RedwillDevice::errorCommunication, this,[=](int serv,const QString){communicationFailed(serv);});    //Обработка ошибки
+    connect(m_dev,&RedwillDevice::modbusRequestSent, this,[=](int,const QString &msg){setMessage(msg);});               //Сообщение об отправке запроса
+
+    connect(m_dev, &RedwillDevice::connectionStatus,this,&MainWindow::connectionChanged);                               //Состояние соединения изменилось
+    connect(m_dev,&RedwillDevice::modbusDataReceved, this,&MainWindow::deviceReceived);
+    connect(m_dev,&RedwillDevice::modbusAckReceved, this,&MainWindow::deviceAck);
 }
-
-void MainWindow::saveSettings(){
-    //Запись в файл настроек
-      QSettings settings("settings.ini",QSettings::IniFormat);
-      settings.beginGroup("Settings");
-      settings.setValue( "ip0", m_connectionPanel->getIpAdd(0));
-      settings.setValue( "ip1", m_connectionPanel->getIpAdd(1));
-      settings.setValue( "port0", m_connectionPanel->getPort(0));
-      settings.setValue( "port1", m_connectionPanel->getPort(1));
-      settings.setValue( "comport", m_connectionPanel->getComport());
-      settings.setValue( "baudrate", m_connectionPanel->getBaud());
-      settings.setValue( "model0", m_connectionPanel->getModel(0));
-      settings.setValue( "model1", m_connectionPanel->getModel(1));
-      settings.setValue( "server0", m_connectionPanel->getServer(0));
-      settings.setValue( "server1", m_connectionPanel->getServer(1));
-      settings.setValue( "doubleMode", ui->actiondoubleMode->isChecked());
-      settings.setValue( "interfaceMode", ui->actiontcp_com->isChecked());
-
-      settings.endGroup();
-
+//*****************************************************************
+//Заполняем информацию о запрашиваемом устройстве
+void MainWindow::fillDevInfo(){
+    m_devInfo.type = DeviceType::LDM;
+    m_devInfo.typeStr = "LDM";
+    m_devInfo.model = m_conSettings.model;
+    m_devInfo.server = m_conSettings.server;
+    m_devInfo.start3adress = 16;
+    m_devInfo.count3regs = 14;
+    m_devInfo.modbusRegsIn.resize(14);
+    m_devInfo.modbusRegsOut.resize(0xFF);
 }
+//*****************************************************************
+//Нажата кнопка Ок в настройках. Надо полностью обновить девайсы и лукеры
+void MainWindow::newSettingsOk(QList<ConSettings> &settings){
+    if(settings.isEmpty())  {
+        QMessageBox::critical(this,"Ошибка параметров подключения", "Произошла ошибка передачи параметров подключения. Повторите попытку!");
+        return;
+    }
+    if(settings.at(0).type!="LDM"){
+        QMessageBox::critical(this,"Ошибка параметров подключения", "Выбран неверный тип прибора. Выберете LDM в настройках и повторите попытку");
 
-void MainWindow::connectionChanged(int server, int status,const QString &host){
+    }
+
+    m_conSettings = settings.at(0);                 //Обновили структуру настроек
+    createRedwillDevice(m_conSettings.interf);   //Пересоздали девайс
+
+    fillDevInfo();                                  //Перезаполнили информацию об устройстве
+    m_looker->setServer(m_conSettings.server);      //Обновили лукер
+    m_looker->setModel(m_conSettings.model);        //Обновили лукер
+}
+//*****************************************************************
+//CONNECT!
+void MainWindow::on_actionconnect_triggered(bool checked)
+{
+    if(checked){
+        m_dev->onConnect();
+        ui->actionsettingsOn->setEnabled(false);
+    }
+    else{
+        m_dev->onDisconnect();
+        ui->actionsettingsOn->setEnabled(true);
+    }
+}
+//*****************************************************************
+//Показать консоль
+void MainWindow::on_actionconsoleOn_toggled(bool arg1){
+    m_console->setVisible(arg1);
+}
+//*****************************************************************
+//Показать настройки
+void MainWindow::on_actionsettingsOn_triggered(){
+   m_serialSetting->show();
+}
+//*****************************************************************
+//Состояние соединения изменилоось
+void MainWindow::connectionChanged(const QString &host,int status){
     QString str;
 
     switch(status){
         case 0:   //Отключено
             str = "Отключено от " + host + "\n";
-            m_statusBar->setMessageBar(str);            
-            m_connectionPanel->setStatusLabel(server,false);
+            m_statusBar->setMessageBar(str);
             m_console->putData(str.toUtf8());
+            m_timerSend->stop();
+            m_looker->switchState(false);
+            ui->actionconnect->setChecked(false);
+            ui->actionsettingsOn->setEnabled(true);
             break;
         case 1:    //Подключение
            str = "Подключение к " + host + "\n";
            m_statusBar->setMessageBar(str);
            m_console->putData(str.toUtf8());
-           ui->actiondoubleMode->setEnabled(false);
            break;
         case 2:     //Подключено
             str = "Подключено к " + host + "\n";
-            m_statusBar->setMessageBar(str);            
-            m_connectionPanel->setStatusLabel(server,true);
+            m_statusBar->setMessageBar(str);
             m_console->putData(str.toUtf8());
-            ui->actiondoubleMode->setEnabled(false);
+            m_timerSend->start();
+            ui->actionsettingsOn->setEnabled(false);
             break;
         case 3:       //Отключение
             str = "Отключение от " + host + "\n";
             m_statusBar->setMessageBar(str);
             m_console->putData(str.toUtf8());
-            ui->actiondoubleMode->setEnabled(false);
             break;
     }
-
-    //Если в мапе нет сервера, создаем его и записываем его состояние
-    //Если в мапе есть этот сервер, то изменяем его состояние
-    if(!connectionState.contains(server))
-        connectionState.insert(server,status);
-    else
-        connectionState[server] = status;
-
-    connectedDevices = 0;
-    connectingDevice=0;
-    //Считаем сколько и каких у нас устройств
-    for(auto e : connectionState.keys()){
-      if(connectionState.value(e) == 2)
-          connectedDevices++;
-      else if(connectionState.value(e) == 1 || connectionState.value(e) == 3)
-          connectingDevice++;
+}
+//*****************************************************************
+//Добавить в очередь запросов
+void MainWindow::add6ToQueue(int server,const QVector<unsigned short> & par, int startAdd, int count){
+    if(m_devInfo.server == server){              //Ненужная проверка на всякий случай, которая будет нужна для >1 девайса
+        for(int i=0;i<count;i++)
+            m_devInfo.modbusRegsOut.replace(startAdd+i,par.at(i));
+        m_devInfo.count6regs = count;
+        m_devInfo.start6adress = startAdd;
+        m_devInfo.func = 6;
     }
-
-
-    if(connectedDevices==0){//Нет подключеных устройств
-        if(connectingDevice==0){//Нет подключающихся устройств
-            connectionState.clear(); //Когда все устройста отключены, чистим мап, потому что сервера могут поменяться
-            ui->actiondoubleMode->setEnabled(true);
-            ui->actiontcp_com->setEnabled(true);
-            m_connectionPanel->connectionButtonChanged(true,0);//ПОДКЛЮЧИТЬСЯ вкл
-            m_connectionPanel->enablePanel(true);              //панель вкл
-
-        }
-        else{//Процесс подключения отключения отключения/подключения
-            ui->actiondoubleMode->setEnabled(false);
-            ui->actiontcp_com->setEnabled(false);
-            m_connectionPanel->connectionButtonChanged(false,2);//Текст не менять выкл
-            m_connectionPanel->enablePanel(false);              //панель выкл
-        }
+}
+//*****************************************************************
+//Отправляем запрос. 6, если он выставлен или 3 в противном случае.
+//Тут надо подумать, если не выставлен 0, стоит ли вообще отправлять что-то или надо ждать?
+void MainWindow::sendTimeout(){
+    if(m_devInfo.func != 6){                    //Если не установлена 6 и предыдущее обработано, то выставляем опять 3
+        m_devInfo.func = 3;
     }
-    else{
-        ui->actiondoubleMode->setEnabled(false);
-        ui->actiontcp_com->setEnabled(false);
-        m_connectionPanel->enablePanel(false);                  //панель выкл
-        if(connectedDevices == currentCountDev){                //Все подключились
-            m_connectionPanel->connectionButtonChanged(true,1);     //ОТКЛЮЧИТЬСЯ вкл
-        }
-        else{                                                   //Не все существующие устройства подключены
-            if(connectingDevice==0)                                 //Нет подключающихся устройств
-                m_connectionPanel->connectionButtonChanged(true,1);     //ОТКЛЮЧИТЬСЯ вкл
-            else                                                    //Процесс подключения отключения отключения/подключения
-                m_connectionPanel->connectionButtonChanged(false,2);    //Текст не менять выкл
-        }
+    m_dev->modbusAct(&m_devInfo);
+}
+//*****************************************************************
+//Получены данные от девайса
+void MainWindow::deviceReceived(int server){
+    if(server == m_devInfo.server){
+        QString str = "Data received from " + m_devInfo.typeStr + QString::number(m_devInfo.model) + " (SERV:" + QString::number(m_devInfo.server) + ")";
+        m_statusBar->setMessageBar(str);
+
+        m_looker->setData(m_devInfo.modbusRegsIn);
+        m_looker->switchState(true);
     }
 }
 
-void MainWindow::connectionFailed(int server, const QString &msg){
-    QString str;
+//*****************************************************************
+//Получено подтверждение от 6 и 16
+void MainWindow::deviceAck(int server){
+    if(server == m_devInfo.server){
+        m_looker->switchState(true);
+    }
+}
+
+//*****************************************************************
+// Показать сообщение в статусе и консоли
+void MainWindow::setMessage(const QString &msg){
     m_statusBar->setMessageBar(msg);
-    m_console->putData(str.toUtf8());
-    m_connectionPanel->setStatusLabel(server,false);
+    m_console->putData(msg.toUtf8());
 }
-
-void MainWindow::connectionPushed(bool action){
-    if(action)  {
-        for(LDMDevice* i:devices)
-                i->onConnect();
-    }
-    else {
-        for(LDMDevice* i:devices)
-                i->onDisconnect();
-    }
-}
-
-void MainWindow::modbusPacketPrint(int , const QString &str){
-    m_console->putData(str.toUtf8());
-}
-
-void MainWindow::clearConsole(){
-    m_console->clear();
-}
-
-
-//Показать консоль
-void MainWindow::on_actionconsoleOn_toggled(bool arg1){
-    m_console->setVisible(arg1);
-    m_connectionPanel->enableClearConsoleButton(arg1);
-}
-
-//Показать настройки
-void MainWindow::on_actionsettingsOn_toggled(bool arg1){
-    m_connectionPanel->setVisible(arg1);
-}
-
-//Переключение tcp|COM
-void MainWindow::on_actiontcp_com_toggled(bool arg1){
-    m_connectionPanel->setInterface(arg1);
-    //При смене типа надо заново создавать все устройства, поскольку в конструкторе передаются все нужные параметры (адреса, скорости и прочее
-
-    for(LDMDevice * i: devices){
-
-        devicesLayout->removeWidget(i);
-        delete i;
+//*****************************************************************
+//Ошибка в логике обмена данными (высокий уровень)
+void MainWindow::communicationFailed(int serv){
+    if(m_looker->server() == serv){
+        m_looker->switchState(false);
+        m_looker->setEnabled(false);
     }
 
-    devices.clear();
-    if(arg1 == Tcp){
-        for(int i =0;i<currentCountDev;i++){
-            devices.append(new LDMDevice(this,m_connectionPanel->getIpAdd(i),m_connectionPanel->getPort(i),m_connectionPanel->getServer(i),ConnectionType::Tcp,m_connectionPanel->getModel(i),DeviceType::LDM));
-            devicesLayout->addWidget(devices.at(i));
-            connectNewDevice(devices.at(i));
-        }
-    }
-    else{
-        devices.append(new LDMDevice(this,m_connectionPanel->getComport(),m_connectionPanel->getBaud(),m_connectionPanel->getServer(0),ConnectionType::Serial,m_connectionPanel->getModel(0),DeviceType::LDM));
-        devicesLayout->addWidget(devices.at(0));
-        connectNewDevice(devices.at(0));
-        for( int i = 1; i<currentCountDev;i++){
-            devices.append(new LDMDevice(this,devices[0]->getModbusClient(),m_connectionPanel->getServer(i),ConnectionType::Serial,m_connectionPanel->getModel(i),DeviceType::LDM));
-            devicesLayout->addWidget(devices.at(i));
-            connectNewDevice(devices.at(i));
-        }
-    }
 }
 
 
-//Переключение 1-2 устройства
-void MainWindow::on_actiondoubleMode_toggled(bool arg1){
-    m_connectionPanel->setDoubleMode(arg1);
+//*****************************************************************
+//ВКЛ/ВЫКЛ логгирование
+void MainWindow::on_actionlogOn_toggled(bool arg1){
 
-    if(arg1){//Если надо добавить второго
-        if(ui->actiontcp_com->isChecked())//tcp mode
-            devices.append(new LDMDevice(this,m_connectionPanel->getIpAdd(1),m_connectionPanel->getPort(1),m_connectionPanel->getServer(1),ConnectionType::Tcp,m_connectionPanel->getModel(1),DeviceType::LDM));
-        else
-            devices.append(new LDMDevice(this,devices[0]->getModbusClient(),m_connectionPanel->getServer(1),ConnectionType::Serial,m_connectionPanel->getModel(1),DeviceType::LDM));
-
-        connectNewDevice(devices[1]);
-        devicesLayout->addWidget(devices.at(1));
-        currentCountDev++;
-    }
-    else{
-        if(devices.size()>1){//Удалять можно только, если 2 и более устройств
-            devicesLayout->removeWidget(devices.at(1));
-            currentCountDev--;
-            delete devices.at(1);
-            devices.remove(1);
-        }
-    }
 }
-
-
-
-
 

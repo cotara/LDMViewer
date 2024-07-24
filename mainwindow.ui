@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>732</width>
+    <height>624</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>732</width>
      <height>21</height>
     </rect>
    </property>
@@ -37,8 +37,8 @@
    </property>
    <property name="iconSize">
     <size>
-     <width>40</width>
-     <height>40</height>
+     <width>70</width>
+     <height>70</height>
     </size>
    </property>
    <property name="toolButtonStyle">
@@ -53,21 +53,22 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionconsoleOn"/>
+   <addaction name="actionconnect"/>
    <addaction name="actionsettingsOn"/>
-   <addaction name="actiontcp_com"/>
-   <addaction name="actiondoubleMode"/>
+   <addaction name="actionconsoleOn"/>
+   <addaction name="actionlogOn"/>
   </widget>
   <action name="actionconsoleOn">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/command-line.png</normaloff>:/res/command-line.png</iconset>
+     <normaloff>:/res/command-line_2.png</normaloff>
+     <normalon>:/res/command-line.png</normalon>:/res/command-line_2.png</iconset>
    </property>
    <property name="text">
     <string>consoleOn</string>
@@ -77,15 +78,12 @@
    </property>
   </action>
   <action name="actionsettingsOn">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/Rightsidebar.png</normaloff>:/res/Rightsidebar.png</iconset>
+     <normaloff>:/res/settings3.png</normaloff>:/res/settings3.png</iconset>
    </property>
    <property name="text">
     <string>settingsOn</string>
@@ -94,35 +92,30 @@
     <string>Отображать панель настроек</string>
    </property>
   </action>
-  <action name="actiontcp_com">
+  <action name="actionconnect">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/vga.png</normaloff>
-     <normalon>:/res/eth2.png</normalon>:/res/vga.png</iconset>
+     <normaloff>:/res/connect_1.png</normaloff>
+     <normalon>:/res/connect_2.png</normalon>:/res/connect_1.png</iconset>
    </property>
    <property name="text">
-    <string>tcp_com</string>
-   </property>
-   <property name="toolTip">
-    <string>Переключение интерфейсов</string>
+    <string>connect</string>
    </property>
   </action>
-  <action name="actiondoubleMode">
+  <action name="actionlogOn">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="res.qrc">
-     <normaloff>:/res/double2.png</normaloff>:/res/double2.png</iconset>
+     <normaloff>:/res/excel (1).png</normaloff>
+     <normalon>:/res/excel.png</normalon>:/res/excel (1).png</iconset>
    </property>
    <property name="text">
-    <string>doubleMode</string>
-   </property>
-   <property name="toolTip">
-    <string>Подключение второго устройства</string>
+    <string>logOn</string>
    </property>
   </action>
  </widget>

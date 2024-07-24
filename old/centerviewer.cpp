@@ -5,6 +5,7 @@ centerViewer::centerViewer(QWidget *parent, int scale): QWidget(parent) {
     layoutV = new QVBoxLayout;
     setLayout(layoutV);
     m_scale = scale;
+    setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 }
 
 void centerViewer::setCoord(double x, double y)
@@ -56,9 +57,7 @@ void centerViewer::paintPosition(QPainter *qp)
     qp->setPen(QPen(Qt::black, 1, Qt::SolidLine, Qt::FlatCap));
     QBrush brush(Qt::red,Qt::SolidPattern);
     qp->setBrush(brush);
-    int minDimention = qMin(widgetCenter.x(),widgetCenter.y());
-    minDimention-=3;
-    double mmToPixScale = minDimention*2.0/m_scale;
+    double mmToPixScale = widgetCenter.y()*2.0/m_scale;
     QPointF rot (m_angle*mmToPixScale*(yPos-xPos),-m_angle*mmToPixScale*(-xPos-yPos));
     QPointF center = static_cast<QPointF>(widgetCenter) + rot;
     //QPointF center = static_cast<QPointF>(widgetCenter) + QPointF(xPos*mmToPixScale,yPos*mmToPixScale);
