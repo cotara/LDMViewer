@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     //Таймер отправки
     m_timerSend = new QTimer(this);
-    m_timerSend->setInterval(200);
+    m_timerSend->setInterval(100);
     connect(m_timerSend,&QTimer::timeout,this, &MainWindow::sendTimeout);
 
     addToolBar(Qt::RightToolBarArea, ui->toolBar);//Перемещаем тулбарнаправо
@@ -226,6 +226,6 @@ void MainWindow::communicationFailed(int serv){
 //*****************************************************************
 //ВКЛ/ВЫКЛ логгирование
 void MainWindow::on_actionlogOn_toggled(bool arg1){
-
+    m_looker->setLog(arg1);
 }
 

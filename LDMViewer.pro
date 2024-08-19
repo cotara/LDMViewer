@@ -33,10 +33,16 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-include(../../Redwill/Redwill.pri)
+
 
 RESOURCES += \
     res.qrc
 RC_ICONS += icon.ico
 
+# QXlsx code for Application Qt project
+QXLSX_PARENTPATH=../../Redwill//QXlsx/         # current QXlsx path is . (. means curret directory)
+QXLSX_HEADERPATH=../../Redwill//QXlsx/header/  # current QXlsx header path is ./header/
+QXLSX_SOURCEPATH=../../Redwill//QXlsx/source/  # current QXlsx source path is ./source/
+include(../../Redwill/QXlsx/QXlsx.pri)
 
+include(../../Redwill/Redwill.pri)
