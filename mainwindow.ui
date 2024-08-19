@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>732</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -33,7 +33,7 @@
     <bool>true</bool>
    </property>
    <property name="orientation">
-    <enum>Qt::Horizontal</enum>
+    <enum>Qt::Orientation::Horizontal</enum>
    </property>
    <property name="iconSize">
     <size>
@@ -42,7 +42,7 @@
     </size>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonIconOnly</enum>
+    <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
    </property>
    <property name="floatable">
     <bool>true</bool>
@@ -89,7 +89,7 @@
     <string>settingsOn</string>
    </property>
    <property name="toolTip">
-    <string>Отображать панель настроек</string>
+    <string>Настройки подключения</string>
    </property>
   </action>
   <action name="actionconnect">
@@ -104,6 +104,9 @@
    <property name="text">
     <string>connect</string>
    </property>
+   <property name="toolTip">
+    <string>Подключение</string>
+   </property>
   </action>
   <action name="actionlogOn">
    <property name="checkable">
@@ -116,6 +119,9 @@
    </property>
    <property name="text">
     <string>logOn</string>
+   </property>
+   <property name="toolTip">
+    <string>Логирование</string>
    </property>
   </action>
  </widget>
