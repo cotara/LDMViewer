@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     //Статус бар
     m_statusBar = new StatusBar(ui->statusbar);
+    m_statusBar->visibleResent(true);
+    m_statusBar->visibleStatus(true);
 
     //Добавление виджетов
     HLayout->addLayout(VLayout);
@@ -141,6 +143,7 @@ void MainWindow::connectionChanged(const QString &host,int status){
         case 0:   //Отключено
             str = "Отключено от " + host + "\n";
             m_statusBar->setMessageBar(str);
+            m_statusBar->setStatus(false);
             m_console->putData(str.toUtf8());
             m_timerSend->stop();
             m_looker->switchState(false);
@@ -155,6 +158,7 @@ void MainWindow::connectionChanged(const QString &host,int status){
         case 2:     //Подключено
             str = "Подключено к " + host + "\n";
             m_statusBar->setMessageBar(str);
+            m_statusBar->setStatus(true);
             m_console->putData(str.toUtf8());
             m_timerSend->start();
             ui->actionsettingsOn->setEnabled(false);
@@ -218,6 +222,7 @@ void MainWindow::communicationFailed(int serv){
     if(m_looker->server() == serv){
         m_looker->switchState(false);
         m_looker->setEnabled(false);
+        m_statusBar->incReSent();
     }
 
 }
