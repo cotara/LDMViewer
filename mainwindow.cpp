@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 }
 
 MainWindow::~MainWindow(){
-    m_serialSetting->saveSettings();
+    m_serialSetting->saveOneSettings();
     delete ui;
 }
 
