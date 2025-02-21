@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     QFontDatabase::addApplicationFont(":/fonts/res/Fonts/SF/SFUIText-Bold.ttf");
     QFontDatabase::addApplicationFont(":/fonts/res/Fonts/SF/SF/SFUIText-Light.ttf");
     QFontDatabase::addApplicationFont(":/fonts/res/Fonts/SF/SF/SFUIText-Regular.ttf");
-    QFile file(":/qss/style.css");
+    QFile file(":/qss/res/style.css");
     if(file.open(QFile::ReadOnly)){
           QByteArray style = file.readAll();
           a.setStyleSheet(style);

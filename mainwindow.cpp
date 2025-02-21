@@ -91,6 +91,8 @@ void MainWindow::fillDevInfo(){
     m_devInfo.count3regs = 14;
     m_devInfo.modbusRegsIn.resize(14);
     m_devInfo.modbusRegsOut.resize(0xFF);
+
+    m_statusBar->setConText(m_conSettings.type + " on " + m_conSettings.host);
 }
 //*****************************************************************
 //Нажата кнопка Ок в настройках. Надо полностью обновить девайсы и лукеры
@@ -143,7 +145,7 @@ void MainWindow::connectionChanged(const QString &host,int status){
         case 0:   //Отключено
             str = "Отключено от " + host + "\n";
             m_statusBar->setMessageBar(str);
-            m_statusBar->setStatus(false);
+            m_statusBar->setConStatus(false);
             m_console->putData(str.toUtf8());
             m_timerSend->stop();
             m_looker->switchState(false);
@@ -158,7 +160,7 @@ void MainWindow::connectionChanged(const QString &host,int status){
         case 2:     //Подключено
             str = "Подключено к " + host + "\n";
             m_statusBar->setMessageBar(str);
-            m_statusBar->setStatus(true);
+            m_statusBar->setConStatus(true);
             m_console->putData(str.toUtf8());
             m_timerSend->start();
             ui->actionsettingsOn->setEnabled(false);

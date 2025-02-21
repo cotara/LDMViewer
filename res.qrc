@@ -54,12 +54,6 @@
         <file>res/excel (1).png</file>
         <file>res/excel.png</file>
     </qresource>
-    <qresource prefix="/qss">
-        <file>style.css</file>
-        <file>styleGreenButtons.css</file>
-        <file>styleWhiteButtons.css</file>
-        <file>styleYelowButtons.css</file>
-    </qresource>
     <qresource prefix="/fonts">
         <file>res/Fonts/GranaPadano.ttf</file>
     </qresource>
