@@ -21,6 +21,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     m_statusBar = new StatusBar(ui->statusbar);
     m_statusBar->visibleResent(true);
     m_statusBar->visibleStatus(true);
+    m_statusBar->visibleBar(true);
+    m_statusBar->setDownloadBarFormat("%v Гц");
+    m_statusBar->setDownloadBarRange(10);
+    m_statusBar->visibleTime(true);
 
     //Добавление виджетов
     HLayout->addLayout(VLayout);
@@ -48,12 +52,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     //Таймер отправки
     m_timerSend = new QTimer(this);
-    m_timerSend->setInterval(100);
+    m_timerSend->setInterval(m_period);
     connect(m_timerSend,&QTimer::timeout,this, &MainWindow::sendTimeout);
 
+    //Таймер подсчета частоты
+    m_freqCalcTimer = new QTimer(this);
+    connect(m_freqCalcTimer,&QTimer::timeout,this, &MainWindow::freqCalcTimeout);
+    m_freqCalcTimer->setInterval(1000);
+
     addToolBar(Qt::RightToolBarArea, ui->toolBar);//Перемещаем тулбарнаправо
-
-
 }
 
 MainWindow::~MainWindow(){
@@ -120,6 +127,8 @@ void MainWindow::on_actionconnect_triggered(bool checked)
     if(checked){
         m_dev->onConnect();
         ui->actionsettingsOn->setEnabled(false);
+        startTime.start();
+        m_statusBar->clearReSent();
     }
     else{
         m_dev->onDisconnect();
@@ -137,39 +146,43 @@ void MainWindow::on_actionsettingsOn_triggered(){
    m_serialSetting->show();
 }
 //*****************************************************************
+//*****************************************************************
 //Состояние соединения изменилоось
 void MainWindow::connectionChanged(const QString &host,int status){
     QString str;
 
     switch(status){
-        case 0:   //Отключено
-            str = "Отключено от " + host + "\n";
-            m_statusBar->setMessageBar(str);
-            m_statusBar->setConStatus(false);
-            m_console->putData(str.toUtf8());
-            m_timerSend->stop();
-            m_looker->switchState(false);
-            ui->actionconnect->setChecked(false);
-            ui->actionsettingsOn->setEnabled(true);
-            break;
-        case 1:    //Подключение
-           str = "Подключение к " + host + "\n";
-           m_statusBar->setMessageBar(str);
-           m_console->putData(str.toUtf8());
-           break;
-        case 2:     //Подключено
-            str = "Подключено к " + host + "\n";
-            m_statusBar->setMessageBar(str);
-            m_statusBar->setConStatus(true);
-            m_console->putData(str.toUtf8());
-            m_timerSend->start();
-            ui->actionsettingsOn->setEnabled(false);
-            break;
-        case 3:       //Отключение
-            str = "Отключение от " + host + "\n";
-            m_statusBar->setMessageBar(str);
-            m_console->putData(str.toUtf8());
-            break;
+    case 0:   //Отключено
+        str = "Отключено от " + host + "\n";
+        m_statusBar->setMessageBar(str);
+        m_statusBar->setConStatus(false);
+        m_console->putData(str.toUtf8());
+        m_timerSend->stop();
+        m_freqCalcTimer->stop();
+        m_looker->switchState(false);
+        ui->actionconnect->setChecked(false);
+        ui->actionsettingsOn->setEnabled(true);
+        break;
+    case 1:    //Подключение
+        str = "Подключение к " + host + "\n";
+        m_statusBar->setMessageBar(str);
+        m_console->putData(str.toUtf8());
+        break;
+    case 2:     //Подключено
+        str = "Подключено к " + host + "\n";
+        m_statusBar->setMessageBar(str);
+        m_statusBar->setConStatus(true);
+        m_console->putData(str.toUtf8());
+        m_timerSend->start();
+        m_freqCalcTimer->start();
+        ui->actionsettingsOn->setEnabled(false);
+        ui->actionconnect->setChecked(true);
+        break;
+    case 3:       //Отключение
+        str = "Отключение от " + host + "\n";
+        m_statusBar->setMessageBar(str);
+        m_console->putData(str.toUtf8());
+        break;
     }
 }
 //*****************************************************************
@@ -192,6 +205,11 @@ void MainWindow::sendTimeout(){
     }
     m_dev->modbusAct(&m_devInfo);
 }
+void MainWindow::freqCalcTimeout(){
+    m_statusBar->setDownloadBarValue(packetCounter);
+    m_statusBar->setTime(QTime(0,0).addMSecs(startTime.elapsed()));
+    packetCounter=0;
+}
 //*****************************************************************
 //Получены данные от девайса
 void MainWindow::deviceReceived(int server){
@@ -201,6 +219,7 @@ void MainWindow::deviceReceived(int server){
 
         m_looker->setData(m_devInfo.modbusRegsIn);
         m_looker->switchState(true);
+        packetCounter++;
     }
 }
 

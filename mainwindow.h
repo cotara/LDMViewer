@@ -33,7 +33,7 @@ private slots:
     void deviceAck(int server);
     void add6ToQueue(int server, const QVector<unsigned short> & par, int startAdd, int count);
     void sendTimeout();
-
+    void freqCalcTimeout();
     void on_actionconnect_triggered(bool checked);      //Кнопка коннект
     void on_actionsettingsOn_triggered();               //Кнопка показать настройки
     void on_actionconsoleOn_toggled(bool arg1);         //Кнопка показать консоль
@@ -44,7 +44,7 @@ private:
     Ui::MainWindow *ui;
     QHBoxLayout *HLayout,*devicesLayout;
     QVBoxLayout *VLayout;
-    QTimer *m_timerSend;
+    QTimer *m_timerSend, *m_freqCalcTimer;
     SerialSettings *m_serialSetting;
     StatusBar *m_statusBar;
     Console *m_console;
@@ -52,7 +52,9 @@ private:
     ConSettings m_conSettings;
     diameterLooker *m_looker;
     RedwillDevice *m_dev = nullptr;
-
+    QElapsedTimer startTime;
+    int m_period=100;
+    int packetCounter=0;
 
 
 };
